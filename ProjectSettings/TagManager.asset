@@ -11,8 +11,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - Blade
+  - Fruit
   - 
   - 
   - 
@@ -38,6 +38,15 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: UI
+    uniqueID: 2906738313
+    locked: 0
+  - name: Blade
+    uniqueID: 176848883
+    locked: 0
+  - name: Fruit
+    uniqueID: 140450049
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0

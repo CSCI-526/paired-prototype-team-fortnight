@@ -1,18 +1,31 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+ using UnityEngine;
 
 public class BladeController : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private Camera cam;
+    private TrailRenderer trail;
+    private Rigidbody2D rb;
+
+    void Awake()
     {
-        
+        cam = Camera.main;
+        trail = GetComponent<TrailRenderer>();
+        rb = GetComponent<Rigidbody2D>();
+        trail.emitting = false; // start off
     }
 
-    // Update is called once per frame
-    void Update()
+     void Update()
+{
+    if (Input.GetMouseButton(0))
     {
-        
+        Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
+        rb.position = new Vector2(mousePos.x, mousePos.y);
+        Debug.Log("Blade moving to " + rb.position);  // check console
+        trail.emitting = true;
     }
+    else
+    {
+        trail.emitting = false;
+    }
+}
 }

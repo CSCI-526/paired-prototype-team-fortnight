@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2284685869477049121}
   - component: {fileID: 6924368425787930043}
   - component: {fileID: 4622239644497009897}
+  - component: {fileID: -1923849521970824727}
   m_Layer: 7
   m_Name: Fruit_Orange
   m_TagString: Untagged
@@ -148,3 +149,17 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 1.28
+--- !u!114 &-1923849521970824727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1394907596545300281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 594a1b1eb5c4e4207833935f9ce66d64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slicedColor: {r: 1, g: 0, b: 0, a: 1}
+  shrinkDuration: 0.2

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4076579301255269499}
   - component: {fileID: 1719226228640314167}
   - component: {fileID: 5315633487875704105}
+  - component: {fileID: 3980370962594692092}
   m_Layer: 7
   m_Name: Fruit_Strawberry
   m_TagString: Untagged
@@ -76,7 +77,7 @@ SpriteRenderer:
   m_SortingLayer: -1
   m_SortingOrder: 0
   m_Sprite: {fileID: -2413806693520163455, guid: 266faf9c4dc9249a8a7bbfdd74b55060, type: 3}
-  m_Color: {r: 0.9339623, g: 0.004405493, b: 0.26010108, a: 1}
+  m_Color: {r: 0.19223925, g: 0.19761114, b: 0.9056604, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -148,3 +149,17 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 1.28
+--- !u!114 &3980370962594692092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6945644733723767612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 594a1b1eb5c4e4207833935f9ce66d64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slicedColor: {r: 1, g: 0, b: 0, a: 1}
+  shrinkDuration: 0.2

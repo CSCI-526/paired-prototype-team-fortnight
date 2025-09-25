@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -7966541537682959746}
   m_Layer: 6
   m_Name: Blade
-  m_TagString: Untagged
+  m_TagString: Blade
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -186,8 +186,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6d23642bccfe460380a6dc6dbe34a51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bladeSpeed: 20
-  minCuttingVelocity: 0.1
 --- !u!50 &-7966541537682959746
 Rigidbody2D:
   serializedVersion: 4

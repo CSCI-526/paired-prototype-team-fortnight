@@ -140,7 +140,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &27975532
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -386,7 +386,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 63809435}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1743013557}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: Replay
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &63809435
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -661,8 +673,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 0, y: 200}
+  m_SizeDelta: {x: 800, y: 160}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &133209148
 MonoBehaviour:
@@ -711,15 +723,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 42
-  m_fontSizeBase: 42
+  m_fontSize: 72
+  m_fontSizeBase: 72
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -1150,7 +1162,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4279440364
-  m_fontColor: {r: 0.9245283, g: 0.07413671, b: 0.07413671, a: 1}
+  m_fontColor: {r: 1, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1167,15 +1179,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 28
-  m_fontSizeBase: 28
+  m_fontSize: 40
+  m_fontSizeBase: 40
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -1344,7 +1356,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_SizeDelta: {x: 800, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &590263690
 MonoBehaviour:
@@ -1402,8 +1414,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -1527,7 +1539,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 709818180}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1743013557}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: StartGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &709818180
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2349,6 +2373,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 617e5711dac49404eac16dd76e21d6f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spawner: {fileID: 1885821402}
+  canvasMain: {fileID: 27975534}
+  panelMenu: {fileID: 1263149565}
+  panelRecipe: {fileID: 51589031}
+  panelGameHUD: {fileID: 1410720713}
+  panelWin: {fileID: 1765322446}
+  panelLose: {fileID: 2129619635}
+  recipeText: {fileID: 590263690}
+  loseReasonText: {fileID: 408243021}
 --- !u!4 &1743013558
 Transform:
   m_ObjectHideFlags: 0
@@ -2476,8 +2509,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 0, y: 200}
+  m_SizeDelta: {x: 600, y: 140}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1812678572
 MonoBehaviour:
@@ -2526,15 +2559,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 64
+  m_fontSizeBase: 64
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -2585,6 +2618,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1885821401}
+  - component: {fileID: 1885821402}
   m_Layer: 0
   m_Name: FruitSpawner
   m_TagString: Untagged
@@ -2614,6 +2648,54 @@ Transform:
   - {fileID: 2073226991}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1885821402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885821400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2499bee641fc44aaba7271316c7dd092, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  autoFindSpawnPoints: 1
+  spawnPoints:
+  - {fileID: 1675482285}
+  - {fileID: 1270294129}
+  - {fileID: 2074407919}
+  - {fileID: 397249132}
+  - {fileID: 1573822868}
+  - {fileID: 1261400452}
+  - {fileID: 2073226991}
+  fruits:
+  - prefab: {fileID: 3863448250924675264, guid: 7adbde7a9e48345538576771bf01dfd2, type: 3}
+    weight: 5
+  - prefab: {fileID: 3239866915217167507, guid: f1fe7720a214f4f84a44c84a02368878, type: 3}
+    weight: 4
+  - prefab: {fileID: 1197260957714650875, guid: 739e45070b2634fe7a4b55b1447b2c48, type: 3}
+    weight: 3
+  - prefab: {fileID: 7068811748644625277, guid: d2019e23259c041b68d083debd875cc0, type: 3}
+    weight: 3
+  - prefab: {fileID: 1394907596545300281, guid: c6fc161b314bf4bad9232c454fa8089c, type: 3}
+    weight: 3
+  - prefab: {fileID: 6945644733723767612, guid: 6411d8e43717f49d780f19f4a2c4c3aa, type: 3}
+    weight: 4
+  - prefab: {fileID: 2316113724987416058, guid: 76a34dc51b62649ef93b0b71a1436b7c, type: 3}
+    weight: 3
+  autoStart: 0
+  intervalRange: {x: 0.6, y: 1.4}
+  minPerBurst: 1
+  maxPerBurst: 3
+  randomizeSpawnPoint: 1
+  xForceRange: {x: -3, y: 3}
+  yForceRange: {x: 18, y: 28}
+  torqueRange: {x: -180, y: 180}
+  biasXBySpawnPosition: 1
+  maxActiveFruits: 25
+  cleanupBelowY: -10
+  cleanupInterval: 1
 --- !u!1 &2035573816
 GameObject:
   m_ObjectHideFlags: 0
@@ -2696,7 +2778,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2035573819}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1743013557}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: Replay
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2035573819
 MonoBehaviour:
   m_ObjectHideFlags: 0

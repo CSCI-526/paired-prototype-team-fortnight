@@ -2349,6 +2349,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 617e5711dac49404eac16dd76e21d6f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spawner: {fileID: 1885821402}
+  canvasMain: {fileID: 27975534}
+  panelMenu: {fileID: 1263149565}
+  panelRecipe: {fileID: 51589031}
+  panelGameHUD: {fileID: 1410720713}
+  panelWin: {fileID: 1765322446}
+  panelLose: {fileID: 2129619635}
+  recipeText: {fileID: 590263690}
+  loseReasonText: {fileID: 408243021}
 --- !u!4 &1743013558
 Transform:
   m_ObjectHideFlags: 0

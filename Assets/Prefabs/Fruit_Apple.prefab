@@ -161,5 +161,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 594a1b1eb5c4e4207833935f9ce66d64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fruitName: Apple
   slicedColor: {r: 1, g: 0, b: 0, a: 1}
   shrinkDuration: 0.2

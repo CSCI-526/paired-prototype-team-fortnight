@@ -63,9 +63,9 @@ public class GameManager : MonoBehaviour
         BuildRecipe();
 
         // Show it on screen
-        string recipeStr = "Recipe: ";
+        string recipeStr = "Recipe:\n";
         foreach (var kvp in recipe)
-            recipeStr += $"{kvp.Key}×{kvp.Value}  ";
+            recipeStr += $"{kvp.Key}×{kvp.Value}\n";
         recipeText.text = recipeStr;
 
         // After short delay, hide recipe and start

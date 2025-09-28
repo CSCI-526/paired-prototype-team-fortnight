@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
     public static int CurrentLevel = 0;
 
-    private enum LevelMode { TutorialWithOrder, MemoryCountsOnly }
+    private enum LevelMode { Tutorial, Memory }
     private LevelMode mode;
 
     [Header("References")]
@@ -21,22 +21,25 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject panelLose;
 
     [Header("UI Texts")]
-    [SerializeField] private TMP_Text recipeText;         
-    [SerializeField] private TMP_Text loseReasonText;     
-    [SerializeField] private TMP_Text hudCountsText;      
-    [SerializeField] private TMP_Text hudSequenceText;    
-    [SerializeField] private TMP_Text winButtonLabel;     
+    [SerializeField] private TMP_Text recipeText;
+    [SerializeField] private TMP_Text loseReasonText;
+    [SerializeField] private TMP_Text hudCountsText;
+    [SerializeField] private TMP_Text hudSequenceText;
+    [SerializeField] private TMP_Text winButtonLabel;
 
+    // Data
     private readonly Dictionary<string, int> recipe = new Dictionary<string, int>();
     private readonly Dictionary<string, int> sliced = new Dictionary<string, int>();
     private readonly List<string> expectedSequence = new List<string>();
+
+    private static Dictionary<string, int> lastRecipe = null; // carry recipe forward
 
     private int currentIndex = 0;
     private bool gameActive = false;
     private bool lastWin = false;
 
-    private const float RECIPE_SHOW_L0 = 3f;
-    private const float RECIPE_SHOW_L1 = 5f;
+    private const float RECIPE_SHOW_TUTORIAL = 3f;
+    private const float RECIPE_SHOW = 5f;
 
     private void Awake()
     {
@@ -70,16 +73,23 @@ public class GameManager : MonoBehaviour
     {
         if (CurrentLevel == 0)
         {
-            mode = LevelMode.TutorialWithOrder;
-            BuildLevel0();
-            ShowRecipePanel(RECIPE_SHOW_L0);
+            mode = LevelMode.Tutorial;
+            BuildRandomLevel(numFruits: 3, minCount: 1, maxCount: 2);
+            ShowRecipePanel(RECIPE_SHOW_TUTORIAL);
+        }
+        else if (CurrentLevel == 1)
+        {
+            mode = LevelMode.Memory;
+            BuildRandomLevel(numFruits: 2, minCount: 2, maxCount: 3);
+            SaveRecipe();
+            ShowRecipePanel(RECIPE_SHOW);
         }
         else
         {
-            mode = LevelMode.MemoryCountsOnly;
-            int numFruits = Mathf.Min(2 + CurrentLevel, spawner.GetAllFruitNames().Count);
-            BuildRandomCountsLevel(numFruits, minCount: 1, maxCount: 3);
-            ShowRecipePanel(RECIPE_SHOW_L1);
+            mode = LevelMode.Memory;
+            BuildExpandedLevel(extraFruits: 2, minCount: 2, maxCount: 3);
+            SaveRecipe();
+            ShowRecipePanel(RECIPE_SHOW);
         }
     }
 
@@ -91,10 +101,7 @@ public class GameManager : MonoBehaviour
         panelWin.SetActive(false);
         panelLose.SetActive(false);
 
-        if (mode == LevelMode.TutorialWithOrder)
-            recipeText.text = BuildRecipeDisplayTextCountsAndOrder();
-        else
-            recipeText.text = BuildRecipeDisplayTextCountsOnly();
+        recipeText.text = BuildRecipeDisplayText();
 
         Invoke(nameof(BeginPlay), seconds);
     }
@@ -103,7 +110,7 @@ public class GameManager : MonoBehaviour
     {
         panelRecipe.SetActive(false);
 
-        if (mode == LevelMode.TutorialWithOrder)
+        if (mode == LevelMode.Tutorial)
         {
             panelGameHUD.SetActive(true);
             UpdateHUD();
@@ -119,28 +126,7 @@ public class GameManager : MonoBehaviour
     }
 
     // ---------- Build Levels ----------
-    private void BuildLevel0()
-    {
-        recipe.Clear(); sliced.Clear(); expectedSequence.Clear();
-
-        // Level 0 always uses Apple + Banana + Strawberry
-        List<string> chosen = new List<string> { "Apple", "Banana", "Strawberry" };
-
-        recipe["Apple"] = 1;
-        recipe["Banana"] = 2;
-        recipe["Strawberry"] = 1;
-
-        foreach (var kv in recipe) sliced[kv.Key] = 0;
-
-        expectedSequence.Add("Apple");
-        expectedSequence.Add("Banana");
-        expectedSequence.Add("Banana");
-        expectedSequence.Add("Strawberry");
-
-        spawner.SetAllowedFruits(chosen);
-    }
-
-    private void BuildRandomCountsLevel(int numFruits, int minCount, int maxCount)
+    private void BuildRandomLevel(int numFruits, int minCount, int maxCount)
     {
         recipe.Clear(); sliced.Clear(); expectedSequence.Clear();
 
@@ -153,7 +139,7 @@ public class GameManager : MonoBehaviour
             int idx = Random.Range(0, allNames.Count);
             string pick = allNames[idx];
             chosen.Add(pick);
-            allNames.RemoveAt(idx);
+            allNames.RemoveAt(idx); // prevent infinite loop
         }
 
         foreach (string fruit in chosen)
@@ -162,7 +148,6 @@ public class GameManager : MonoBehaviour
             recipe[fruit] = count;
             sliced[fruit] = 0;
 
-            // Sequence is not enforced (any order allowed)
             for (int i = 0; i < count; i++)
                 expectedSequence.Add(fruit);
         }
@@ -170,21 +155,51 @@ public class GameManager : MonoBehaviour
         spawner.SetAllowedFruits(chosen);
     }
 
-    // ---------- UI Helpers ----------
-    private string BuildRecipeDisplayTextCountsAndOrder()
+    private void BuildExpandedLevel(int extraFruits, int minCount, int maxCount)
     {
-        List<string> counts = new List<string>();
-        foreach (var kv in recipe) counts.Add($"{kv.Key}×{kv.Value}");
-        string countsLine = "Recipe: " + string.Join("  ", counts);
-        string seqLine = "Order: " + string.Join(" → ", expectedSequence);
-        return countsLine + "\n" + seqLine;
+        recipe.Clear(); sliced.Clear(); expectedSequence.Clear();
+
+        // keep last recipe
+        foreach (var kv in lastRecipe)
+        {
+            recipe[kv.Key] = kv.Value;
+            sliced[kv.Key] = 0;
+            for (int i = 0; i < kv.Value; i++)
+                expectedSequence.Add(kv.Key);
+        }
+
+        // add new fruits
+        List<string> allNames = spawner.GetAllFruitNames();
+        foreach (string used in recipe.Keys)
+            allNames.Remove(used);
+
+        int toAdd = Mathf.Min(extraFruits, allNames.Count);
+        for (int i = 0; i < toAdd; i++)
+        {
+            int idx = Random.Range(0, allNames.Count);
+            string pick = allNames[idx];
+            allNames.RemoveAt(idx);
+
+            int count = Random.Range(minCount, maxCount + 1);
+            recipe[pick] = count;
+            sliced[pick] = 0;
+            for (int j = 0; j < count; j++)
+                expectedSequence.Add(pick);
+        }
+
+        spawner.SetAllowedFruits(new List<string>(recipe.Keys));
     }
 
-    private string BuildRecipeDisplayTextCountsOnly()
+    private void SaveRecipe() => lastRecipe = new Dictionary<string, int>(recipe);
+
+    // ---------- UI Helpers ----------
+    private string BuildRecipeDisplayText()
     {
         List<string> counts = new List<string>();
-        foreach (var kv in recipe) counts.Add($"{kv.Key}×{kv.Value}");
-        return "Recipe: " + string.Join("  ", counts);
+        foreach (var kv in recipe)
+            counts.Add($"{kv.Key} × {kv.Value}");
+        string seqLine = "Order: " + string.Join(" → ", expectedSequence);
+        return "Recipe: " + string.Join("  ", counts) + "\n" + seqLine;
     }
 
     private void UpdateHUD()
@@ -205,56 +220,32 @@ public class GameManager : MonoBehaviour
         if (!gameActive || fruit == null) return;
         string name = fruit.fruitName;
 
-        if (mode == LevelMode.TutorialWithOrder)
+        if (currentIndex >= expectedSequence.Count)
         {
-            // strict order check
-            if (currentIndex >= expectedSequence.Count)
-            {
-                EndGame(false, $"Extra slice: {name}");
-                return;
-            }
-
-            string expected = expectedSequence[currentIndex];
-            if (name != expected)
-            {
-                EndGame(false, $"Wrong! Expected {expected}, got {name}");
-                return;
-            }
-
-            currentIndex++;
-            sliced[name]++;
-            if (sliced[name] > recipe[name])
-            {
-                EndGame(false, $"Too many {name}s!");
-                return;
-            }
-            UpdateHUD();
-
-            if (currentIndex >= expectedSequence.Count)
-                EndGame(true, null);
+            EndGame(false, $"Extra slice: {name}");
+            return;
         }
-        else
+
+        string expected = expectedSequence[currentIndex];
+        if (name != expected)
         {
-            // counts-only mode (order doesn’t matter)
-            if (!recipe.ContainsKey(name))
-            {
-                EndGame(false, $"Wrong fruit: {name}");
-                return;
-            }
+            EndGame(false, $"Wrong! Expected {expected}, got {name}");
+            return;
+        }
 
-            sliced[name]++;
-            if (sliced[name] > recipe[name])
-            {
-                EndGame(false, $"Too many {name}s!");
-                return;
-            }
+        currentIndex++;
+        sliced[name]++;
 
-            // check if all counts complete
-            foreach (var kv in recipe)
-                if (sliced[kv.Key] < kv.Value) return;
+        if (sliced[name] > recipe[name])
+        {
+            EndGame(false, $"Too many {name}s!");
+            return;
+        }
 
+        if (mode == LevelMode.Tutorial) UpdateHUD();
+
+        if (currentIndex >= expectedSequence.Count)
             EndGame(true, null);
-        }
     }
 
     private void EndGame(bool win, string reason)
@@ -267,7 +258,7 @@ public class GameManager : MonoBehaviour
         if (win)
         {
             panelWin.SetActive(true);
-            if (winButtonLabel != null) winButtonLabel.text = "Next";
+            if (winButtonLabel != null) winButtonLabel.text = "Next Level";
         }
         else
         {

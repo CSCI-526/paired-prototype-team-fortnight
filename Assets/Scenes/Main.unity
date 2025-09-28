@@ -2945,8 +2945,6 @@ MonoBehaviour:
     weight: 3
   - prefab: {fileID: 3239866915217167507, guid: f1fe7720a214f4f84a44c84a02368878, type: 3}
     weight: 3
-  - prefab: {fileID: 6945644733723767612, guid: 6411d8e43717f49d780f19f4a2c4c3aa, type: 3}
-    weight: 2
   autoStart: 0
   intervalRange: {x: 0.6, y: 1.4}
   minPerBurst: 1

@@ -2653,6 +2653,7 @@ MonoBehaviour:
   loseReasonText: {fileID: 408243021}
   hudCountsText: {fileID: 1197069222}
   hudSequenceText: {fileID: 1176308693}
+  winButtonLabel: {fileID: 1499626794}
 --- !u!4 &1743013558
 Transform:
   m_ObjectHideFlags: 0

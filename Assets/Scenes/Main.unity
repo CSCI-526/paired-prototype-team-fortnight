@@ -2941,19 +2941,11 @@ MonoBehaviour:
   - {fileID: 2073226991}
   fruits:
   - prefab: {fileID: 3863448250924675264, guid: 7adbde7a9e48345538576771bf01dfd2, type: 3}
-    weight: 5
+    weight: 3
   - prefab: {fileID: 3239866915217167507, guid: f1fe7720a214f4f84a44c84a02368878, type: 3}
-    weight: 4
-  - prefab: {fileID: 1197260957714650875, guid: 739e45070b2634fe7a4b55b1447b2c48, type: 3}
-    weight: 3
-  - prefab: {fileID: 7068811748644625277, guid: d2019e23259c041b68d083debd875cc0, type: 3}
-    weight: 3
-  - prefab: {fileID: 1394907596545300281, guid: c6fc161b314bf4bad9232c454fa8089c, type: 3}
     weight: 3
   - prefab: {fileID: 6945644733723767612, guid: 6411d8e43717f49d780f19f4a2c4c3aa, type: 3}
-    weight: 4
-  - prefab: {fileID: 2316113724987416058, guid: 76a34dc51b62649ef93b0b71a1436b7c, type: 3}
-    weight: 3
+    weight: 2
   autoStart: 0
   intervalRange: {x: 0.6, y: 1.4}
   minPerBurst: 1

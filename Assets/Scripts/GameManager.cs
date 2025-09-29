@@ -128,6 +128,16 @@ private void RebuildRetryLevel()
 
         Invoke(nameof(BeginPlay), seconds);
     }
+    private void BoostNextFruit()
+    {
+        spawner.ResetWeights(1f); // reset all fruits to low baseline weight
+
+        if (currentIndex < expectedSequence.Count)
+        {
+            string nextFruit = expectedSequence[currentIndex];
+            spawner.SetFruitWeight(nextFruit, 8f); // heavily bias next required fruit
+        }
+    }
 
     private void BeginPlay()
     {
@@ -146,6 +156,7 @@ private void RebuildRetryLevel()
         currentIndex = 0;
         gameActive = true;
         spawner.StartSpawning();
+        BoostNextFruit(); // highlight the first fruit
     }
     private void BoostRecipeFruitWeights()
     {
@@ -258,14 +269,17 @@ private void RebuildRetryLevel()
     public void OnFruitSliced(Fruit fruit)
     {
         if (!gameActive || fruit == null) return;
+
         string name = fruit.fruitName;
 
+        // Already finished?
         if (currentIndex >= expectedSequence.Count)
         {
             EndGame(false, $"Extra slice: {name}");
             return;
         }
 
+        // Order check
         string expected = expectedSequence[currentIndex];
         if (name != expected)
         {
@@ -273,6 +287,7 @@ private void RebuildRetryLevel()
             return;
         }
 
+        // Correct slice
         currentIndex++;
         sliced[name]++;
 
@@ -284,9 +299,17 @@ private void RebuildRetryLevel()
 
         if (mode == LevelMode.Tutorial) UpdateHUD();
 
+        // Finished recipe?
         if (currentIndex >= expectedSequence.Count)
+        {
             EndGame(true, null);
+            return;
+        }
+
+        // Re-bias weights toward the NEW next fruit
+        BoostNextFruit();
     }
+
     private static Dictionary<string, int> retryRecipe = null; // store recipe on lose
     private void EndGame(bool win, string reason)
 {

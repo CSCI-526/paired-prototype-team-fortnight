@@ -197,11 +197,11 @@ public class FruitSpawner : MonoBehaviour
         }
     }
 
-    public void ResetWeights()
+public void ResetWeights(float baseline = 3f)
 {
     foreach (var opt in fruits)
     {
-        opt.weight = 3f; // default weight
+        opt.weight = baseline;
     }
 }
 
@@ -218,6 +218,7 @@ public void SetFruitWeight(string fruitName, float newWeight)
         }
     }
 }
+
 
 #if UNITY_EDITOR
     private void OnDrawGizmos()

@@ -197,6 +197,28 @@ public class FruitSpawner : MonoBehaviour
         }
     }
 
+    public void ResetWeights()
+{
+    foreach (var opt in fruits)
+    {
+        opt.weight = 3f; // default weight
+    }
+}
+
+public void SetFruitWeight(string fruitName, float newWeight)
+{
+    foreach (var opt in fruits)
+    {
+        if (opt.prefab == null) continue;
+        string prefabName = opt.prefab.name.Replace("Fruit_", "");
+        if (prefabName == fruitName)
+        {
+            opt.weight = newWeight;
+            break;
+        }
+    }
+}
+
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {

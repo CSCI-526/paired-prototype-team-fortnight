@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     public static int CurrentLevel = 0;
 
     private enum LevelMode { Tutorial, Memory }
+    private static LevelMode? retryMode = null;
     private LevelMode mode;
 
     [Header("References")]
@@ -68,30 +69,52 @@ public class GameManager : MonoBehaviour
 
         if (winButtonLabel != null) winButtonLabel.text = "Replay";
     }
+private void RebuildRetryLevel()
+{
+    recipe.Clear(); sliced.Clear(); expectedSequence.Clear();
 
-    public void StartGame()
+    foreach (var kv in retryRecipe)
     {
-        if (CurrentLevel == 0)
-        {
-            mode = LevelMode.Tutorial;
-            BuildRandomLevel(numFruits: 3, minCount: 1, maxCount: 2);
-            ShowRecipePanel(RECIPE_SHOW_TUTORIAL);
-        }
-        else if (CurrentLevel == 1)
-        {
-            mode = LevelMode.Memory;
-            BuildRandomLevel(numFruits: 2, minCount: 2, maxCount: 3);
-            SaveRecipe();
-            ShowRecipePanel(RECIPE_SHOW);
-        }
-        else
-        {
-            mode = LevelMode.Memory;
-            BuildExpandedLevel(extraFruits: 2, minCount: 2, maxCount: 3);
-            SaveRecipe();
-            ShowRecipePanel(RECIPE_SHOW);
-        }
+        recipe[kv.Key] = kv.Value;
+        sliced[kv.Key] = 0;
+        for (int i = 0; i < kv.Value; i++)
+            expectedSequence.Add(kv.Key);
     }
+    BoostRecipeFruitWeights();
+    // spawner.SetAllowedFruits(new List<string>(recipe.Keys));
+}
+    public void StartGame()
+{
+    if (retryRecipe != null && retryMode != null)
+    {
+        mode = retryMode.Value; // restore mode
+        RebuildRetryLevel();
+        ShowRecipePanel(mode == LevelMode.Tutorial ? RECIPE_SHOW_TUTORIAL : RECIPE_SHOW);
+        return;
+    }
+
+
+    if (CurrentLevel == 0)
+    {
+        mode = LevelMode.Tutorial;
+        BuildRandomLevel(numFruits: 3, minCount: 1, maxCount: 2);
+        ShowRecipePanel(RECIPE_SHOW_TUTORIAL);
+    }
+    else if (CurrentLevel == 1)
+    {
+        mode = LevelMode.Memory;
+        BuildRandomLevel(numFruits: 2, minCount: 2, maxCount: 3);
+        SaveRecipe();
+        ShowRecipePanel(RECIPE_SHOW);
+    }
+    else
+    {
+        mode = LevelMode.Memory;
+        BuildExpandedLevel(extraFruits: 2, minCount: 2, maxCount: 3);
+        SaveRecipe();
+        ShowRecipePanel(RECIPE_SHOW);
+    }
+}
 
     private void ShowRecipePanel(float seconds)
     {
@@ -124,6 +147,14 @@ public class GameManager : MonoBehaviour
         gameActive = true;
         spawner.StartSpawning();
     }
+    private void BoostRecipeFruitWeights()
+    {
+        spawner.ResetWeights(); // reset to default (we’ll add this in FruitSpawner)
+        foreach (var fruit in recipe.Keys)
+        {
+            spawner.SetFruitWeight(fruit, 6); // boost recipe fruits
+        }
+    }
 
     // ---------- Build Levels ----------
     private void BuildRandomLevel(int numFruits, int minCount, int maxCount)
@@ -151,8 +182,8 @@ public class GameManager : MonoBehaviour
             for (int i = 0; i < count; i++)
                 expectedSequence.Add(fruit);
         }
-
-        spawner.SetAllowedFruits(chosen);
+        BoostRecipeFruitWeights();
+        // spawner.SetAllowedFruits(chosen);
     }
 
     private void BuildExpandedLevel(int extraFruits, int minCount, int maxCount)
@@ -186,21 +217,30 @@ public class GameManager : MonoBehaviour
             for (int j = 0; j < count; j++)
                 expectedSequence.Add(pick);
         }
-
-        spawner.SetAllowedFruits(new List<string>(recipe.Keys));
+        BoostRecipeFruitWeights();
+        // spawner.SetAllowedFruits(new List<string>(recipe.Keys));
     }
 
     private void SaveRecipe() => lastRecipe = new Dictionary<string, int>(recipe);
 
     // ---------- UI Helpers ----------
     private string BuildRecipeDisplayText()
+{
+    List<string> counts = new List<string>();
+    foreach (var kv in recipe)
+        counts.Add($"{kv.Key} × {kv.Value}");
+
+    string baseLine = "Recipe: " + string.Join("  ", counts);
+
+    // Show order ONLY in tutorial (Level 0)
+    if (mode == LevelMode.Tutorial)
     {
-        List<string> counts = new List<string>();
-        foreach (var kv in recipe)
-            counts.Add($"{kv.Key} × {kv.Value}");
         string seqLine = "Order: " + string.Join(" → ", expectedSequence);
-        return "Recipe: " + string.Join("  ", counts) + "\n" + seqLine;
+        return baseLine + "\n" + seqLine;
     }
+
+    return baseLine;
+}
 
     private void UpdateHUD()
     {
@@ -247,30 +287,40 @@ public class GameManager : MonoBehaviour
         if (currentIndex >= expectedSequence.Count)
             EndGame(true, null);
     }
-
+    private static Dictionary<string, int> retryRecipe = null; // store recipe on lose
     private void EndGame(bool win, string reason)
-    {
-        lastWin = win;
-        gameActive = false;
-        spawner.StopSpawning();
-        panelGameHUD.SetActive(false);
+{
+    lastWin = win;
+    gameActive = false;
+    spawner.StopSpawning();
+    panelGameHUD.SetActive(false);
 
-        if (win)
-        {
-            panelWin.SetActive(true);
-            if (winButtonLabel != null) winButtonLabel.text = "Next Level";
-        }
-        else
-        {
-            panelLose.SetActive(true);
-            loseReasonText.text = reason;
-            if (winButtonLabel != null) winButtonLabel.text = "Replay";
-        }
+    if (win)
+    {
+        panelWin.SetActive(true);
+        retryRecipe = null; // clear retry recipe
+        retryMode = null;
+        if (winButtonLabel != null) winButtonLabel.text = "Next Level";
     }
+    else
+    {
+        panelLose.SetActive(true);
+        loseReasonText.text = reason;
+        retryRecipe = new Dictionary<string, int>(recipe); // save current recipe
+        retryMode = mode; // save the mode too
+        if (winButtonLabel != null) winButtonLabel.text = "Retry";
+    }
+}
 
     public void Replay()
-    {
-        if (lastWin) CurrentLevel++;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+{
+        if (lastWin)
+        {
+            CurrentLevel++;
+            retryRecipe = null; // don’t carry over losing recipe
+            retryMode = null;
     }
+
+    UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+}
 }

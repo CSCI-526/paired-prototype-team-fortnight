@@ -20,7 +20,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject panelGameHUD;
     [SerializeField] private GameObject panelWin;
     [SerializeField] private GameObject panelLose;
-    [SerializeField] private GameObject panelTutorialEnd;  
+    [SerializeField] private GameObject panelTutorialEnd;
+
+    [SerializeField] private GameObject panelGameCleared; // NEW - shown after clearing final level
+
 
     [Header("UI Texts")]
     [SerializeField] private TMP_Text recipeText;
@@ -29,7 +32,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TMP_Text hudSequenceText;
     [SerializeField] private TMP_Text winButtonLabel;
 
-     // NEW - Tutorial finished page
+    // NEW - Tutorial finished page
     [SerializeField] private TMP_Text levelText;            // NEW - shows Level number on recipe panel
     [SerializeField] private TMP_Text tutorialEndTitle;   // NEW
 
@@ -69,7 +72,8 @@ public class GameManager : MonoBehaviour
         panelGameHUD.SetActive(false);
         panelWin.SetActive(false);
         panelLose.SetActive(false);
-        if (panelTutorialEnd != null) panelTutorialEnd.SetActive(false); // NEW
+        if (panelTutorialEnd != null) panelTutorialEnd.SetActive(false);
+        if (panelGameCleared != null) panelGameCleared.SetActive(false); // NEW
 
         gameActive = false;
         currentIndex = 0;
@@ -77,6 +81,7 @@ public class GameManager : MonoBehaviour
 
         if (winButtonLabel != null) winButtonLabel.text = "Replay";
     }
+
 
     private void RebuildRetryLevel()
     {
@@ -326,45 +331,53 @@ public class GameManager : MonoBehaviour
 
     private static Dictionary<string, int> retryRecipe = null; // store recipe on lose
     private void EndGame(bool win, string reason)
-{
-    lastWin = win;
-    gameActive = false;
-    spawner.StopSpawning();
-    panelGameHUD.SetActive(false);
-
-    // ✅ Always handle Tutorial first (win OR lose)
-    if (mode == LevelMode.Tutorial)
-{
-    if (panelTutorialEnd != null)
     {
-        panelTutorialEnd.SetActive(true);
+        lastWin = win;
+        gameActive = false;
+        spawner.StopSpawning();
+        panelGameHUD.SetActive(false);
 
-        if (tutorialEndTitle != null)
+        // ✅ Always handle Tutorial first (win OR lose)
+        if (mode == LevelMode.Tutorial)
         {
-            tutorialEndTitle.text = win ? "Tutorial Won!" : "Tutorial Lost!";
+            if (panelTutorialEnd != null)
+            {
+                panelTutorialEnd.SetActive(true);
+
+                if (tutorialEndTitle != null)
+                {
+                    tutorialEndTitle.text = win ? "Tutorial Won!" : "Tutorial Lost!";
+                }
+            }
+            return;
+        }
+
+
+        // Normal levels (non-tutorial)
+        if (win)
+        {
+            // Final level cleared
+            if (CurrentLevel == 4)
+            {
+                if (panelGameCleared != null)
+                    panelGameCleared.SetActive(true);
+                return;
+            }
+
+            panelWin.SetActive(true);
+            retryRecipe = null;
+            retryMode = null;
+            if (winButtonLabel != null) winButtonLabel.text = "Next Level";
+        }
+        else
+        {
+            panelLose.SetActive(true);
+            loseReasonText.text = reason;
+            retryRecipe = new Dictionary<string, int>(recipe);
+            retryMode = mode;
+            if (winButtonLabel != null) winButtonLabel.text = "Retry";
         }
     }
-    return;
-}
-
-
-    // Normal levels (non-tutorial)
-    if (win)
-    {
-        panelWin.SetActive(true);
-        retryRecipe = null;
-        retryMode = null;
-        if (winButtonLabel != null) winButtonLabel.text = "Next Level";
-    }
-    else
-    {
-        panelLose.SetActive(true);
-        loseReasonText.text = reason;
-        retryRecipe = new Dictionary<string, int>(recipe);
-        retryMode = mode;
-        if (winButtonLabel != null) winButtonLabel.text = "Retry";
-    }
-}
 
 
     public void Replay()
@@ -378,7 +391,7 @@ public class GameManager : MonoBehaviour
 
         UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
     }
-        // ---------- NEW BUTTON HANDLERS ----------
+    // ---------- NEW BUTTON HANDLERS ----------
 
     public void OnClick_Tutorial()
     {
@@ -389,10 +402,20 @@ public class GameManager : MonoBehaviour
 
     public void OnClick_Play()
     {
+        // If a retry is pending, do NOT clear it — just start the saved recipe
+        if (retryRecipe != null && retryMode != null)
+        {
+            StartGame();
+            return;
+        }
+
+        // Normal "Play" behavior (fresh start)
         CurrentLevel = Mathf.Max(1, CurrentLevel);
-        retryRecipe = null; retryMode = null;
+        retryRecipe = null;
+        retryMode = null;
         StartGame();
     }
+
 
     public void OnClick_NextLevel()
     {
@@ -403,6 +426,19 @@ public class GameManager : MonoBehaviour
 
     public void OnClick_RetryLevel()
     {
+        // If we have a saved recipe & mode, rebuild and restart right here
+        if (retryRecipe != null && retryMode != null)
+        {
+            mode = retryMode.Value;
+            panelLose.SetActive(false);
+            panelWin.SetActive(false);
+
+            RebuildRetryLevel();
+            ShowRecipePanel(mode == LevelMode.Tutorial ? RECIPE_SHOW_TUTORIAL : RECIPE_SHOW);
+            return;
+        }
+
+        // Fallback (shouldn't happen, but safe)
         UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
     }
 
@@ -420,4 +456,21 @@ public class GameManager : MonoBehaviour
         ShowMenu();
     }
 
+    public void NextLevel()
+    {
+        CurrentLevel++;
+        retryRecipe = null;
+        retryMode = null;
+
+        // Directly start the game instead of showing menu
+        StartGame();
+    }
+
+    public void OnClick_GameClearedToMenu()
+    {
+        CurrentLevel = 0;
+        retryRecipe = null;
+        retryMode = null;
+        ShowMenu();
+    }
 }

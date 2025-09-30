@@ -337,37 +337,30 @@ public class GameManager : MonoBehaviour
         spawner.StopSpawning();
         panelGameHUD.SetActive(false);
 
-        // ✅ Always handle Tutorial first (win OR lose)
-        if (mode == LevelMode.Tutorial)
-        {
-            if (panelTutorialEnd != null)
-            {
-                panelTutorialEnd.SetActive(true);
-
-                if (tutorialEndTitle != null)
-                {
-                    tutorialEndTitle.text = win ? "Tutorial Won!" : "Tutorial Lost!";
-                }
-            }
-            return;
-        }
-
-
-        // Normal levels (non-tutorial)
         if (win)
         {
-            // Final level cleared
-            if (CurrentLevel == 4)
-            {
-                if (panelGameCleared != null)
-                    panelGameCleared.SetActive(true);
-                return;
-            }
-
             panelWin.SetActive(true);
-            retryRecipe = null;
+            retryRecipe = null; 
             retryMode = null;
             if (winButtonLabel != null) winButtonLabel.text = "Next Level";
+
+            // 🔥 Random win phrase
+            string[] winPhrases = new string[]
+            {
+                "W Level 🏅",
+                "You Cooked That 🔥",
+                "Too EZ 😎",
+                "Certified Slicer 🥝",
+                "That’s a Dub! 🎯",
+                "Big Slice Energy ⚡"
+            };
+
+            // pick one randomly
+            string randomPhrase = winPhrases[Random.Range(0, winPhrases.Length)];
+
+            // set WinText in your Panel_Win
+            TMP_Text winText = panelWin.GetComponentInChildren<TMP_Text>();
+            if (winText != null) winText.text = randomPhrase;
         }
         else
         {
@@ -378,6 +371,7 @@ public class GameManager : MonoBehaviour
             if (winButtonLabel != null) winButtonLabel.text = "Retry";
         }
     }
+
 
 
     public void Replay()

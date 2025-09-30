@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject panelGameHUD;
     [SerializeField] private GameObject panelWin;
     [SerializeField] private GameObject panelLose;
+    [SerializeField] private GameObject panelTutorialEnd;  
 
     [Header("UI Texts")]
     [SerializeField] private TMP_Text recipeText;
@@ -27,6 +28,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TMP_Text hudCountsText;
     [SerializeField] private TMP_Text hudSequenceText;
     [SerializeField] private TMP_Text winButtonLabel;
+
+     // NEW - Tutorial finished page
+    [SerializeField] private TMP_Text levelText;            // NEW - shows Level number on recipe panel
+    [SerializeField] private TMP_Text tutorialEndTitle;   // NEW
+
+
 
     // Data
     private readonly Dictionary<string, int> recipe = new Dictionary<string, int>();
@@ -62,6 +69,7 @@ public class GameManager : MonoBehaviour
         panelGameHUD.SetActive(false);
         panelWin.SetActive(false);
         panelLose.SetActive(false);
+        if (panelTutorialEnd != null) panelTutorialEnd.SetActive(false); // NEW
 
         gameActive = false;
         currentIndex = 0;
@@ -69,52 +77,53 @@ public class GameManager : MonoBehaviour
 
         if (winButtonLabel != null) winButtonLabel.text = "Replay";
     }
-private void RebuildRetryLevel()
-{
-    recipe.Clear(); sliced.Clear(); expectedSequence.Clear();
 
-    foreach (var kv in retryRecipe)
+    private void RebuildRetryLevel()
     {
-        recipe[kv.Key] = kv.Value;
-        sliced[kv.Key] = 0;
-        for (int i = 0; i < kv.Value; i++)
-            expectedSequence.Add(kv.Key);
+        recipe.Clear(); sliced.Clear(); expectedSequence.Clear();
+
+        foreach (var kv in retryRecipe)
+        {
+            recipe[kv.Key] = kv.Value;
+            sliced[kv.Key] = 0;
+            for (int i = 0; i < kv.Value; i++)
+                expectedSequence.Add(kv.Key);
+        }
+        BoostRecipeFruitWeights();
+        // spawner.SetAllowedFruits(new List<string>(recipe.Keys));
     }
-    BoostRecipeFruitWeights();
-    // spawner.SetAllowedFruits(new List<string>(recipe.Keys));
-}
     public void StartGame()
-{
-    if (retryRecipe != null && retryMode != null)
     {
-        mode = retryMode.Value; // restore mode
-        RebuildRetryLevel();
-        ShowRecipePanel(mode == LevelMode.Tutorial ? RECIPE_SHOW_TUTORIAL : RECIPE_SHOW);
-        return;
-    }
+        if (retryRecipe != null && retryMode != null)
+        {
+            mode = retryMode.Value; // restore mode
+            RebuildRetryLevel();
+            ShowRecipePanel(mode == LevelMode.Tutorial ? RECIPE_SHOW_TUTORIAL : RECIPE_SHOW);
+            return;
+        }
 
 
-    if (CurrentLevel == 0)
-    {
-        mode = LevelMode.Tutorial;
-        BuildRandomLevel(numFruits: 3, minCount: 1, maxCount: 2);
-        ShowRecipePanel(RECIPE_SHOW_TUTORIAL);
+        if (CurrentLevel == 0)
+        {
+            mode = LevelMode.Tutorial;
+            BuildRandomLevel(numFruits: 3, minCount: 1, maxCount: 2);
+            ShowRecipePanel(RECIPE_SHOW_TUTORIAL);
+        }
+        else if (CurrentLevel == 1)
+        {
+            mode = LevelMode.Memory;
+            BuildRandomLevel(numFruits: 2, minCount: 2, maxCount: 3);
+            SaveRecipe();
+            ShowRecipePanel(RECIPE_SHOW);
+        }
+        else
+        {
+            mode = LevelMode.Memory;
+            BuildExpandedLevel(extraFruits: 2, minCount: 2, maxCount: 3);
+            SaveRecipe();
+            ShowRecipePanel(RECIPE_SHOW);
+        }
     }
-    else if (CurrentLevel == 1)
-    {
-        mode = LevelMode.Memory;
-        BuildRandomLevel(numFruits: 2, minCount: 2, maxCount: 3);
-        SaveRecipe();
-        ShowRecipePanel(RECIPE_SHOW);
-    }
-    else
-    {
-        mode = LevelMode.Memory;
-        BuildExpandedLevel(extraFruits: 2, minCount: 2, maxCount: 3);
-        SaveRecipe();
-        ShowRecipePanel(RECIPE_SHOW);
-    }
-}
 
     private void ShowRecipePanel(float seconds)
     {
@@ -123,11 +132,16 @@ private void RebuildRetryLevel()
         panelGameHUD.SetActive(false);
         panelWin.SetActive(false);
         panelLose.SetActive(false);
+        if (panelTutorialEnd != null) panelTutorialEnd.SetActive(false); // NEW
 
         recipeText.text = BuildRecipeDisplayText();
 
+        if (levelText != null)
+            levelText.text = $"Level {CurrentLevel}"; // NEW
+
         Invoke(nameof(BeginPlay), seconds);
     }
+
     private void BoostNextFruit()
     {
         spawner.ResetWeights(1f); // reset all fruits to low baseline weight
@@ -236,22 +250,22 @@ private void RebuildRetryLevel()
 
     // ---------- UI Helpers ----------
     private string BuildRecipeDisplayText()
-{
-    List<string> counts = new List<string>();
-    foreach (var kv in recipe)
-        counts.Add($"{kv.Key} × {kv.Value}");
-
-    string baseLine = "Recipe: " + string.Join("  ", counts);
-
-    // Show order ONLY in tutorial (Level 0)
-    if (mode == LevelMode.Tutorial)
     {
-        string seqLine = "Order: " + string.Join(" → ", expectedSequence);
-        return baseLine + "\n" + seqLine;
-    }
+        List<string> counts = new List<string>();
+        foreach (var kv in recipe)
+            counts.Add($"{kv.Key} × {kv.Value}");
 
-    return baseLine;
-}
+        string baseLine = "Recipe: " + string.Join("  ", counts);
+
+        // Show order ONLY in tutorial (Level 0)
+        if (mode == LevelMode.Tutorial)
+        {
+            string seqLine = "Order: " + string.Join(" → ", expectedSequence);
+            return baseLine + "\n" + seqLine;
+        }
+
+        return baseLine;
+    }
 
     private void UpdateHUD()
     {
@@ -318,10 +332,27 @@ private void RebuildRetryLevel()
     spawner.StopSpawning();
     panelGameHUD.SetActive(false);
 
+    // ✅ Always handle Tutorial first (win OR lose)
+    if (mode == LevelMode.Tutorial)
+{
+    if (panelTutorialEnd != null)
+    {
+        panelTutorialEnd.SetActive(true);
+
+        if (tutorialEndTitle != null)
+        {
+            tutorialEndTitle.text = win ? "Tutorial Won!" : "Tutorial Lost!";
+        }
+    }
+    return;
+}
+
+
+    // Normal levels (non-tutorial)
     if (win)
     {
         panelWin.SetActive(true);
-        retryRecipe = null; // clear retry recipe
+        retryRecipe = null;
         retryMode = null;
         if (winButtonLabel != null) winButtonLabel.text = "Next Level";
     }
@@ -329,21 +360,64 @@ private void RebuildRetryLevel()
     {
         panelLose.SetActive(true);
         loseReasonText.text = reason;
-        retryRecipe = new Dictionary<string, int>(recipe); // save current recipe
-        retryMode = mode; // save the mode too
+        retryRecipe = new Dictionary<string, int>(recipe);
+        retryMode = mode;
         if (winButtonLabel != null) winButtonLabel.text = "Retry";
     }
 }
 
+
     public void Replay()
-{
+    {
         if (lastWin)
         {
             CurrentLevel++;
             retryRecipe = null; // don’t carry over losing recipe
             retryMode = null;
+        }
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+    }
+        // ---------- NEW BUTTON HANDLERS ----------
+
+    public void OnClick_Tutorial()
+    {
+        CurrentLevel = 0;
+        retryRecipe = null; retryMode = null;
+        StartGame();
     }
 
-    UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
-}
+    public void OnClick_Play()
+    {
+        CurrentLevel = Mathf.Max(1, CurrentLevel);
+        retryRecipe = null; retryMode = null;
+        StartGame();
+    }
+
+    public void OnClick_NextLevel()
+    {
+        CurrentLevel++;
+        retryRecipe = null; retryMode = null;
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+    }
+
+    public void OnClick_RetryLevel()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
+    }
+
+    public void OnClick_StartGameFromTutorial()
+    {
+        CurrentLevel = 1;
+        retryRecipe = null; retryMode = null;
+        StartGame();
+    }
+
+    public void OnClick_MainMenu()
+    {
+        CurrentLevel = 0;
+        retryRecipe = null; retryMode = null;
+        ShowMenu();
+    }
+
 }

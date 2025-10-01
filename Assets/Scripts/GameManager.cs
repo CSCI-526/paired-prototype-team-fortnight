@@ -347,12 +347,12 @@ public class GameManager : MonoBehaviour
             // 🔥 Random win phrase
             string[] winPhrases = new string[]
             {
-                "W Level 🏅",
-                "You Cooked That 🔥",
-                "Too EZ 😎",
-                "Certified Slicer 🥝",
-                "That’s a Dub! 🎯",
-                "Big Slice Energy ⚡"
+                "W Level!",
+                "You Cooked That!",
+                "Too EZ!",
+                "Certified Slicer!",
+                "That's a Dub!",
+                "Big Slice Energy!"
             };
 
             // pick one randomly

@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
-using System.Collections.Generic;
+using System.Collections;   // for IEnumerator (coroutines)
+using System.Collections.Generic;  // already there, for Dictionary and List
 
 public class GameManager : MonoBehaviour
 {
@@ -23,6 +24,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject panelTutorialEnd;
 
     [SerializeField] private GameObject panelGameCleared; // NEW - shown after clearing final level
+    [SerializeField] private GameObject panelFruitGuide;   // NEW
+
+    [Header("UI Buttons")]
+    [SerializeField] private UnityEngine.UI.Button proceedButton; // NEW
 
 
     [Header("UI Texts")]
@@ -260,7 +265,7 @@ public class GameManager : MonoBehaviour
         foreach (var kv in recipe)
             counts.Add($"{kv.Key} × {kv.Value}");
 
-        string baseLine = "Recipe: " + string.Join("  ", counts);
+        string baseLine = "Smoothie Recipe: " + string.Join("  ", counts);
 
         // Show order ONLY in tutorial (Level 0)
         if (mode == LevelMode.Tutorial)
@@ -337,22 +342,33 @@ public class GameManager : MonoBehaviour
         spawner.StopSpawning();
         panelGameHUD.SetActive(false);
 
+            // ✅ If tutorial mode, always show the Tutorial End panel
+        if (mode == LevelMode.Tutorial)
+        {
+            panelTutorialEnd.SetActive(true);
+
+            if (tutorialEndTitle != null)
+                tutorialEndTitle.text = win ? "Great Job!" : "Try Again!";
+
+            return; // stop here so Win/Lose panels are not shown
+        }
+
         if (win)
         {
             panelWin.SetActive(true);
-            retryRecipe = null; 
+            retryRecipe = null;
             retryMode = null;
             if (winButtonLabel != null) winButtonLabel.text = "Next Level";
 
             // 🔥 Random win phrase
             string[] winPhrases = new string[]
             {
-                "W Level!",
-                "You Cooked That!",
-                "Too EZ!",
-                "Certified Slicer!",
-                "That's a Dub!",
-                "Big Slice Energy!"
+                "W Level!\nBlend it into a smoothie win!",
+                "You Cooked That!\nNow sip your victory smoothie!",
+                "Too EZ!\nSmoothie skills unlocked!",
+                "Certified Slicer!\nSmoothie master in the making!",
+                "That's a Dub!\nTime to pour a victory smoothie!",
+                "Big Slice Energy!\nSmooth moves for a smooth smoothie!"
             };
 
             // pick one randomly
@@ -391,7 +407,7 @@ public class GameManager : MonoBehaviour
     {
         CurrentLevel = 0;
         retryRecipe = null; retryMode = null;
-        StartGame();
+        ShowFruitGuide();
     }
 
     public void OnClick_Play()
@@ -466,5 +482,61 @@ public class GameManager : MonoBehaviour
         retryRecipe = null;
         retryMode = null;
         ShowMenu();
+    }
+
+    private void StartTutorialAfterGuide()
+    {
+        mode = LevelMode.Tutorial;   // force tutorial mode
+        BuildRandomLevel(numFruits: 3, minCount: 1, maxCount: 2);
+        ShowRecipePanel(RECIPE_SHOW_TUTORIAL);
+    }
+
+    public void ShowFruitGuide()
+    {
+        // Always stop/clean game state when entering the guide
+        if (spawner != null) spawner.StopSpawning();
+        CancelInvoke(nameof(BeginPlay));   // in case a previous recipe panel had scheduled it
+        gameActive = false;
+        currentIndex = 0;
+
+        // Hide other panels
+        panelMenu.SetActive(false);
+        panelRecipe.SetActive(false);
+        panelGameHUD.SetActive(false);
+        panelWin.SetActive(false);
+        panelLose.SetActive(false);
+        panelTutorialEnd.SetActive(false);
+
+        // Show the fruit guide panel
+        panelFruitGuide.SetActive(true);
+
+        // :arrows_counterclockwise: Reset the guide rows + layout so they’re visible again
+        var anim = panelFruitGuide.GetComponent<FruitGuideAnimator>();
+        if (anim != null) anim.ResetRows();
+
+        // Hook proceed button (play exit animation, then start tutorial)
+        proceedButton.onClick.RemoveAllListeners();
+        proceedButton.onClick.AddListener(() =>
+        {
+            var a = panelFruitGuide.GetComponent<FruitGuideAnimator>();
+            if (a != null)
+            {
+                StartCoroutine(PlayGuideExit(a));
+            }
+            else
+            {
+                panelFruitGuide.SetActive(false);
+                StartTutorialAfterGuide();   // ensure this starts tutorial mode
+            }
+        });
+    }
+
+    // Coroutine to play animation then start tutorial
+    private IEnumerator PlayGuideExit(FruitGuideAnimator anim)
+    {
+        yield return StartCoroutine(anim.AnimateRows());
+
+        panelFruitGuide.SetActive(false);
+        StartTutorialAfterGuide();
     }
 }

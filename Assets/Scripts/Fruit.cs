@@ -44,7 +44,7 @@ public class Fruit : MonoBehaviour
             Destroy(ps.gameObject, 1f);
         }
 
-        // Play sound ★
+        // Play sound 
         if (AudioManager.Instance != null && audioSource != null)
         {
             AudioManager.Instance.PlaySliceSound(audioSource);
@@ -75,12 +75,12 @@ public class Fruit : MonoBehaviour
         while (elapsed < fadeDuration)
         {
             float t = elapsed / fadeDuration;
-            sr.color = new Color(original.r, original.g, original.b, 1f - t); // fade alpha
+            sr.color = new Color(original.r, original.g, original.b, 1f - t); 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        sr.color = new Color(original.r, original.g, original.b, 0f); // fully transparent
+        sr.color = new Color(original.r, original.g, original.b, 0f); 
         Destroy(gameObject);
     }
 }

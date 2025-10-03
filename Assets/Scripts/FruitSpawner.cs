@@ -173,7 +173,7 @@ public class FruitSpawner : MonoBehaviour
         spawnPoints = list.ToArray();
     }
 
-    // --- Level Helpers ---
+
     public List<string> GetAllFruitNames()
     {
         var names = new List<string>();

@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;
-using System.Collections;   // for IEnumerator (coroutines)
-using System.Collections.Generic;  // already there, for Dictionary and List
+using System.Collections;   
+using System.Collections.Generic;  
 
 public class GameManager : MonoBehaviour
 {
@@ -23,11 +23,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject panelLose;
     [SerializeField] private GameObject panelTutorialEnd;
 
-    [SerializeField] private GameObject panelGameCleared; // NEW - shown after clearing final level
-    [SerializeField] private GameObject panelFruitGuide;   // NEW
+    [SerializeField] private GameObject panelGameCleared; 
+    [SerializeField] private GameObject panelFruitGuide;   
 
     [Header("UI Buttons")]
-    [SerializeField] private UnityEngine.UI.Button proceedButton; // NEW
+    [SerializeField] private UnityEngine.UI.Button proceedButton; 
 
 
     [Header("UI Texts")]
@@ -37,18 +37,18 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TMP_Text hudSequenceText;
     [SerializeField] private TMP_Text winButtonLabel;
 
-    // NEW - Tutorial finished page
-    [SerializeField] private TMP_Text levelText;            // NEW - shows Level number on recipe panel
-    [SerializeField] private TMP_Text tutorialEndTitle;   // NEW
+    
+    [SerializeField] private TMP_Text levelText;            
+    [SerializeField] private TMP_Text tutorialEndTitle;   
 
 
 
-    // Data
+    
     private readonly Dictionary<string, int> recipe = new Dictionary<string, int>();
     private readonly Dictionary<string, int> sliced = new Dictionary<string, int>();
     private readonly List<string> expectedSequence = new List<string>();
 
-    private static Dictionary<string, int> lastRecipe = null; // carry recipe forward
+    private static Dictionary<string, int> lastRecipe = null; 
 
     private int currentIndex = 0;
     private bool gameActive = false;
@@ -56,6 +56,7 @@ public class GameManager : MonoBehaviour
 
     private const float RECIPE_SHOW_TUTORIAL = 3f;
     private const float RECIPE_SHOW = 5f;
+    private const int FINAL_LEVEL = 4;
 
     private void Awake()
     {
@@ -69,7 +70,7 @@ public class GameManager : MonoBehaviour
 
     private void Start() => ShowMenu();
 
-    // ---------- UI ----------
+    
     public void ShowMenu()
     {
         panelMenu.SetActive(true);
@@ -100,18 +101,23 @@ public class GameManager : MonoBehaviour
                 expectedSequence.Add(kv.Key);
         }
         BoostRecipeFruitWeights();
-        // spawner.SetAllowedFruits(new List<string>(recipe.Keys));
+        
     }
     public void StartGame()
     {
         if (retryRecipe != null && retryMode != null)
         {
-            mode = retryMode.Value; // restore mode
+            mode = retryMode.Value; 
             RebuildRetryLevel();
             ShowRecipePanel(mode == LevelMode.Tutorial ? RECIPE_SHOW_TUTORIAL : RECIPE_SHOW);
             return;
         }
-
+        
+        if (CurrentLevel > FINAL_LEVEL)
+        {
+            ShowGameCleared();
+            return;
+        }
 
         if (CurrentLevel == 0)
         {
@@ -142,24 +148,24 @@ public class GameManager : MonoBehaviour
         panelGameHUD.SetActive(false);
         panelWin.SetActive(false);
         panelLose.SetActive(false);
-        if (panelTutorialEnd != null) panelTutorialEnd.SetActive(false); // NEW
+        if (panelTutorialEnd != null) panelTutorialEnd.SetActive(false); 
 
         recipeText.text = BuildRecipeDisplayText();
 
         if (levelText != null)
-            levelText.text = $"Level {CurrentLevel}"; // NEW
+            levelText.text = $"Level {CurrentLevel}"; 
 
         Invoke(nameof(BeginPlay), seconds);
     }
 
     private void BoostNextFruit()
     {
-        spawner.ResetWeights(1f); // reset all fruits to low baseline weight
+        spawner.ResetWeights(1f); 
 
         if (currentIndex < expectedSequence.Count)
         {
             string nextFruit = expectedSequence[currentIndex];
-            spawner.SetFruitWeight(nextFruit, 8f); // heavily bias next required fruit
+            spawner.SetFruitWeight(nextFruit, 8f); 
         }
     }
 
@@ -180,18 +186,18 @@ public class GameManager : MonoBehaviour
         currentIndex = 0;
         gameActive = true;
         spawner.StartSpawning();
-        BoostNextFruit(); // highlight the first fruit
+        BoostNextFruit(); 
     }
     private void BoostRecipeFruitWeights()
     {
-        spawner.ResetWeights(); // reset to default (we’ll add this in FruitSpawner)
+        spawner.ResetWeights(); 
         foreach (var fruit in recipe.Keys)
         {
-            spawner.SetFruitWeight(fruit, 6); // boost recipe fruits
+            spawner.SetFruitWeight(fruit, 6); 
         }
     }
 
-    // ---------- Build Levels ----------
+    
     private void BuildRandomLevel(int numFruits, int minCount, int maxCount)
     {
         recipe.Clear(); sliced.Clear(); expectedSequence.Clear();
@@ -205,7 +211,7 @@ public class GameManager : MonoBehaviour
             int idx = Random.Range(0, allNames.Count);
             string pick = allNames[idx];
             chosen.Add(pick);
-            allNames.RemoveAt(idx); // prevent infinite loop
+            allNames.RemoveAt(idx); 
         }
 
         foreach (string fruit in chosen)
@@ -258,7 +264,7 @@ public class GameManager : MonoBehaviour
 
     private void SaveRecipe() => lastRecipe = new Dictionary<string, int>(recipe);
 
-    // ---------- UI Helpers ----------
+    
     private string BuildRecipeDisplayText()
     {
         List<string> counts = new List<string>();
@@ -267,7 +273,7 @@ public class GameManager : MonoBehaviour
 
         string baseLine = "Smoothie Recipe: " + string.Join("  ", counts);
 
-        // Show order ONLY in tutorial (Level 0)
+        
         if (mode == LevelMode.Tutorial)
         {
             string seqLine = "Order: " + string.Join(" → ", expectedSequence);
@@ -289,21 +295,21 @@ public class GameManager : MonoBehaviour
         hudSequenceText.text = $"Sequence: {seq}\nNext: {next}";
     }
 
-    // ---------- Gameplay ----------
+    
     public void OnFruitSliced(Fruit fruit)
     {
         if (!gameActive || fruit == null) return;
 
         string name = fruit.fruitName;
 
-        // Already finished?
+        
         if (currentIndex >= expectedSequence.Count)
         {
             EndGame(false, $"Extra slice: {name}");
             return;
         }
 
-        // Order check
+        
         string expected = expectedSequence[currentIndex];
         if (name != expected)
         {
@@ -311,7 +317,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Correct slice
+        
         currentIndex++;
         sliced[name]++;
 
@@ -323,18 +329,18 @@ public class GameManager : MonoBehaviour
 
         if (mode == LevelMode.Tutorial) UpdateHUD();
 
-        // Finished recipe?
+        
         if (currentIndex >= expectedSequence.Count)
         {
             EndGame(true, null);
             return;
         }
 
-        // Re-bias weights toward the NEW next fruit
+        
         BoostNextFruit();
     }
 
-    private static Dictionary<string, int> retryRecipe = null; // store recipe on lose
+    private static Dictionary<string, int> retryRecipe = null; 
     private void EndGame(bool win, string reason)
     {
         lastWin = win;
@@ -342,7 +348,7 @@ public class GameManager : MonoBehaviour
         spawner.StopSpawning();
         panelGameHUD.SetActive(false);
 
-            // ✅ If tutorial mode, always show the Tutorial End panel
+        //  If tutorial mode, always show the Tutorial End panel
         if (mode == LevelMode.Tutorial)
         {
             panelTutorialEnd.SetActive(true);
@@ -360,7 +366,13 @@ public class GameManager : MonoBehaviour
             retryMode = null;
             if (winButtonLabel != null) winButtonLabel.text = "Next Level";
 
-            // 🔥 Random win phrase
+            
+            if (CurrentLevel >= FINAL_LEVEL)
+            {
+                ShowGameCleared();
+                return;
+            }
+            
             string[] winPhrases = new string[]
             {
                 "W Level!\nBlend it into a smoothie win!",
@@ -371,10 +383,10 @@ public class GameManager : MonoBehaviour
                 "Big Slice Energy!\nSmooth moves for a smooth smoothie!"
             };
 
-            // pick one randomly
+            
             string randomPhrase = winPhrases[Random.Range(0, winPhrases.Length)];
 
-            // set WinText in your Panel_Win
+            
             TMP_Text winText = panelWin.GetComponentInChildren<TMP_Text>();
             if (winText != null) winText.text = randomPhrase;
         }
@@ -395,13 +407,13 @@ public class GameManager : MonoBehaviour
         if (lastWin)
         {
             CurrentLevel++;
-            retryRecipe = null; // don’t carry over losing recipe
+            retryRecipe = null; 
             retryMode = null;
         }
 
         UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
     }
-    // ---------- NEW BUTTON HANDLERS ----------
+   
 
     public void OnClick_Tutorial()
     {
@@ -412,14 +424,14 @@ public class GameManager : MonoBehaviour
 
     public void OnClick_Play()
     {
-        // If a retry is pending, do NOT clear it — just start the saved recipe
+        
         if (retryRecipe != null && retryMode != null)
         {
             StartGame();
             return;
         }
 
-        // Normal "Play" behavior (fresh start)
+        
         CurrentLevel = Mathf.Max(1, CurrentLevel);
         retryRecipe = null;
         retryMode = null;
@@ -436,7 +448,7 @@ public class GameManager : MonoBehaviour
 
     public void OnClick_RetryLevel()
     {
-        // If we have a saved recipe & mode, rebuild and restart right here
+        
         if (retryRecipe != null && retryMode != null)
         {
             mode = retryMode.Value;
@@ -448,7 +460,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Fallback (shouldn't happen, but safe)
+        
         UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
     }
 
@@ -469,10 +481,16 @@ public class GameManager : MonoBehaviour
     public void NextLevel()
     {
         CurrentLevel++;
+        
+        if (CurrentLevel > FINAL_LEVEL)
+        {
+            ShowGameCleared();
+            return;
+        }
         retryRecipe = null;
         retryMode = null;
 
-        // Directly start the game instead of showing menu
+        
         StartGame();
     }
 
@@ -486,16 +504,16 @@ public class GameManager : MonoBehaviour
 
     private void StartTutorialAfterGuide()
     {
-        mode = LevelMode.Tutorial;   // force tutorial mode
+        mode = LevelMode.Tutorial;   
         BuildRandomLevel(numFruits: 3, minCount: 1, maxCount: 2);
         ShowRecipePanel(RECIPE_SHOW_TUTORIAL);
     }
 
     public void ShowFruitGuide()
     {
-        // Always stop/clean game state when entering the guide
+        
         if (spawner != null) spawner.StopSpawning();
-        CancelInvoke(nameof(BeginPlay));   // in case a previous recipe panel had scheduled it
+        CancelInvoke(nameof(BeginPlay));   
         gameActive = false;
         currentIndex = 0;
 
@@ -510,11 +528,11 @@ public class GameManager : MonoBehaviour
         // Show the fruit guide panel
         panelFruitGuide.SetActive(true);
 
-        // :arrows_counterclockwise: Reset the guide rows + layout so they’re visible again
+        
         var anim = panelFruitGuide.GetComponent<FruitGuideAnimator>();
         if (anim != null) anim.ResetRows();
 
-        // Hook proceed button (play exit animation, then start tutorial)
+        
         proceedButton.onClick.RemoveAllListeners();
         proceedButton.onClick.AddListener(() =>
         {
@@ -526,17 +544,29 @@ public class GameManager : MonoBehaviour
             else
             {
                 panelFruitGuide.SetActive(false);
-                StartTutorialAfterGuide();   // ensure this starts tutorial mode
+                StartTutorialAfterGuide();   
             }
         });
     }
 
-    // Coroutine to play animation then start tutorial
+    
     private IEnumerator PlayGuideExit(FruitGuideAnimator anim)
     {
         yield return StartCoroutine(anim.AnimateRows());
 
         panelFruitGuide.SetActive(false);
         StartTutorialAfterGuide();
+    }
+
+    private void ShowGameCleared()
+    {
+        panelMenu.SetActive(false);
+        panelRecipe.SetActive(false);
+        panelGameHUD.SetActive(false);
+        panelWin.SetActive(false);
+        panelLose.SetActive(false);
+        panelTutorialEnd.SetActive(false);
+
+        panelGameCleared.SetActive(true);
     }
 }

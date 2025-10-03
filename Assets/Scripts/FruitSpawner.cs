@@ -17,7 +17,7 @@ public class FruitSpawner : MonoBehaviour
 
     [Header("Fruit Prefabs (with weights)")]
     [SerializeField] private List<FruitOption> fruits = new List<FruitOption>();
-    private List<FruitOption> masterFruits; // keeps all fruits permanently
+    private List<FruitOption> masterFruits;
 
     [Header("Spawning")]
     [SerializeField] private bool autoStart = true;
@@ -46,7 +46,7 @@ public class FruitSpawner : MonoBehaviour
     private void Awake()
     {
         if (autoFindSpawnPoints) TryAutoFindSpawnPoints();
-        masterFruits = new List<FruitOption>(fruits); // backup all fruits once
+        masterFruits = new List<FruitOption>(fruits);
     }
 
     private void Start()

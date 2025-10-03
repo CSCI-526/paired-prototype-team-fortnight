@@ -7,10 +7,10 @@ public class Fruit : MonoBehaviour
 
 
     [Header("Fruit Info")]
-    public string fruitName = "Apple"; // identify fruit type
+    public string fruitName = "Apple";
 
     [Header("Slice Effect")]
-    [SerializeField] private float fadeDuration = 0.3f; // how long sprite fades out
+    [SerializeField] private float fadeDuration = 0.3f;
 
     private bool isSliced = false;
 
@@ -35,7 +35,6 @@ public class Fruit : MonoBehaviour
     {
         isSliced = true;
 
-        // Play juice spray
         var ps = GetComponentInChildren<ParticleSystem>();
         if (ps != null)
         {
@@ -44,7 +43,6 @@ public class Fruit : MonoBehaviour
             Destroy(ps.gameObject, 1f);
         }
 
-        // Play sound 
         if (AudioManager.Instance != null && audioSource != null)
         {
             AudioManager.Instance.PlaySliceSound(audioSource);
@@ -54,10 +52,8 @@ public class Fruit : MonoBehaviour
             Debug.LogWarning("Slice sound not played: missing AudioManager or AudioSource.", this);
         }
 
-        // Notify GameManager
         GameManager.Instance.OnFruitSliced(this);
 
-        // Disable physics
         var rb = GetComponent<Rigidbody2D>();
         if (rb != null) rb.simulated = false;
 

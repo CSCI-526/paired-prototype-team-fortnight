@@ -79,7 +79,7 @@ public class GameManager : MonoBehaviour
         panelWin.SetActive(false);
         panelLose.SetActive(false);
         if (panelTutorialEnd != null) panelTutorialEnd.SetActive(false);
-        if (panelGameCleared != null) panelGameCleared.SetActive(false); // NEW
+        if (panelGameCleared != null) panelGameCleared.SetActive(false);
 
         gameActive = false;
         currentIndex = 0;
@@ -224,14 +224,12 @@ public class GameManager : MonoBehaviour
                 expectedSequence.Add(fruit);
         }
         BoostRecipeFruitWeights();
-        // spawner.SetAllowedFruits(chosen);
     }
 
     private void BuildExpandedLevel(int extraFruits, int minCount, int maxCount)
     {
         recipe.Clear(); sliced.Clear(); expectedSequence.Clear();
 
-        // keep last recipe
         foreach (var kv in lastRecipe)
         {
             recipe[kv.Key] = kv.Value;
@@ -240,7 +238,6 @@ public class GameManager : MonoBehaviour
                 expectedSequence.Add(kv.Key);
         }
 
-        // add new fruits
         List<string> allNames = spawner.GetAllFruitNames();
         foreach (string used in recipe.Keys)
             allNames.Remove(used);
@@ -259,7 +256,6 @@ public class GameManager : MonoBehaviour
                 expectedSequence.Add(pick);
         }
         BoostRecipeFruitWeights();
-        // spawner.SetAllowedFruits(new List<string>(recipe.Keys));
     }
 
     private void SaveRecipe() => lastRecipe = new Dictionary<string, int>(recipe);
@@ -348,7 +344,6 @@ public class GameManager : MonoBehaviour
         spawner.StopSpawning();
         panelGameHUD.SetActive(false);
 
-        //  If tutorial mode, always show the Tutorial End panel
         if (mode == LevelMode.Tutorial)
         {
             panelTutorialEnd.SetActive(true);
@@ -356,7 +351,7 @@ public class GameManager : MonoBehaviour
             if (tutorialEndTitle != null)
                 tutorialEndTitle.text = win ? "Great Job!" : "Try Again!";
 
-            return; // stop here so Win/Lose panels are not shown
+            return;
         }
 
         if (win)
@@ -517,7 +512,6 @@ public class GameManager : MonoBehaviour
         gameActive = false;
         currentIndex = 0;
 
-        // Hide other panels
         panelMenu.SetActive(false);
         panelRecipe.SetActive(false);
         panelGameHUD.SetActive(false);
@@ -525,7 +519,6 @@ public class GameManager : MonoBehaviour
         panelLose.SetActive(false);
         panelTutorialEnd.SetActive(false);
 
-        // Show the fruit guide panel
         panelFruitGuide.SetActive(true);
 
         
